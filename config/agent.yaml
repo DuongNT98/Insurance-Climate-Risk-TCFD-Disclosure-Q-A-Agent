@@ -1,0 +1,40 @@
+# Agent Manifest — AgentRegistry entry point
+# AgentRegistry (mediator/registry/agent_registry.py) reads every key below at
+# ROOT level — do NOT nest keys under an `agent:` block. See the framework's
+# AgentRegistry manifest schema documentation for the full contract.
+id: "INS-C2-013"
+name: "Insurance Climate Risk & TCFD Disclosure Q&A Agent"
+namespace: "ins"
+version: "0.1.0"
+enabled: true
+category: "Cat 2"
+# Static generation contract. QueryClassifyNode's LLM refinement enhances the
+# deterministic classifier via Azure OpenAI; any failure (missing secret, API
+# error, malformed response) degrades to the deterministic result — never a
+# crash, never status=error for this reason alone.
+generation_mode: "llm"
+industry: "INS"
+
+# Opaque compatibility metadata. It is not an inheritance selector or gate input.
+# (Pattern reference only — inheritance is L1-direct AgentBaseGraph.)
+base_type: "RAGAgent"
+
+# Entry point — single dotted import path (module.Class).
+class: "src.graph.graph.TCFDClimateDisclosureAgent"
+
+# Security
+required_trust_level: "VERIFIED_EXTERNAL"
+
+# Compile-time gates (AgentRegistry._compile_and_cache) — declare every secret/extra
+# actually used, or the agent loads with those checks silently disabled.
+# QueryClassifyNode resolves these per-invocation via ctx.secrets.require(...) to
+# build an AzureOpenAIClient (see src/nodes/query_classify_node.py). Any failure
+# to resolve/build/call degrades to the deterministic classifier — the KB
+# retrieval itself remains a local/mock implementation, no secrets there.
+requires:
+  secrets: ["AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_DEPLOYMENT"]
+  extras: ["openai"]
+
+# Runtime parameters (max_retry, kb namespaces, language, TCFD/FSA vintages, ...)
+# live in config/config.yaml — AgentRegistry loads that file separately and
+# passes it as Graph(config=...). Do NOT put them here.

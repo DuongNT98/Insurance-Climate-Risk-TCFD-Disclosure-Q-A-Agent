@@ -1,0 +1,23 @@
+# Runtime parameters — loaded by AgentRegistry, passed as Graph(config=...).
+# This is a SEPARATE file from config/agent.yaml (the static manifest): agent.yaml
+# is AgentRegistry's discovery entry point, this file is the agent's own runtime
+# config, keyed by whatever your Graph/node code reads via self.config.get(...).
+# See the framework documentation for the agent.yaml / config.yaml split of responsibility.
+
+max_retry: 3
+timeout_s: 30
+
+# Domain config surface (INS-C2-013) — read by TCFDGraphNode / TCFDDisclosureWorkflowGraph
+# via self.config.get(...); tcfd_kb / iais_kb / llm are optional and not set here
+# (local/mock KB implementation; LLM refinement degrades to the deterministic
+# classifier when absent — see src/nodes/query_classify_node.py).
+tcfd_fsa_climate_kb_namespace: "tcfd_fsa_climate"   # TCFD + FSA + IPCC AR6 scenarios
+iais_ins_climate_kb_namespace: "iais_ins_climate"    # IAIS climate supervision + INS sector TCFD
+language: "ja"   # ja | en
+tcfd_recommendation_version: "2017"   # stable; update if TCFD publishes a revision
+fsa_guidance_vintage: "2025"          # update annually — FSA releases updated climate guidance
+
+# No HITL, no cross-invocation memory in this template.
+# memory_enabled: false
+# hitl:
+#   enabled: false
